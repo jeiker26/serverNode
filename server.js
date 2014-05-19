@@ -1,10 +1,15 @@
 #!/bin/env node
 //  OpenShift sample Node application
 var express = require('express');
+var path = require('path');
 var fs = require('fs');
 
 //Para conexion
 var mongoose = require('mongoose');
+var passport = require('passport');
+
+require('./models/user');
+require('./passport')(passport);
 
 
 // default to a 'localhost' configuration:
@@ -150,9 +155,28 @@ var SampleApp = function() {
         self.app = express();
         self.app.use(express.urlencoded());
         self.app.use(express.json());
+        self.app.use(express.cookieParser());
         self.app.use(express.bodyParser());
         self.app.use(express.methodOverride());
         self.app.use(self.app.router);
+        self.app.use(express.session({secret: 'jeiker26'}));
+
+        self.app.use(passport.initialize());
+        self.app.use(passport.session());
+
+        self.app.get('/logout', function(rep, res) {
+            req.logOut();
+            res.redirect('/');
+        });
+        self.app.get('/auth/twitter', passport.authenticate('twitter'));
+        self.app.get('/auth/facebook', passport.authenticate('facebook'));
+        self.app.get('/auth/twitter/callback', passport.authenticate('twitter',
+                {successRedirect: '/', failureRedirect: '/login'}
+        ));
+        self.app.get('/auth/facebook/callback', passport.authenticate('facebook',
+                {successRedirect: '/', failureRedirect: '/login'}
+        ));
+
 
         //  Add handlers for the app (from the routes).
         for (var r in self.routes) {

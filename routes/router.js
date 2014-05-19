@@ -1,5 +1,5 @@
 module.exports = function(app){
-	var Users = require('../dao/models/usersDAO');
+	var Users = require('../models/user');
 
 	//GET
 	findAllUser = function(req, res){

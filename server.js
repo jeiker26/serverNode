@@ -1,4 +1,4 @@
-#!/bin/env node
+//#!/bin/env node
 //  OpenShift sample Node application
 var express = require('express');
 var path = require('path');
@@ -9,6 +9,7 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 
 require('./models/user');
+require('./models/rutes');
 require('./passport')(passport);
 
 
@@ -123,22 +124,9 @@ var SampleApp = function() {
 
         self.routes = {};
 
-        self.routes['/asciimo'] = function(req, res) {
-            var link = "http://i.imgur.com/kmbjB.png";
-            res.send("<html><body><img src='" + link + "'><p>" + self.port + "</p></body></html>");
-        };
-
         self.routes['/'] = function(req, res) {
             res.setHeader('Content-Type', 'text/html');
             res.send(self.cache_get('index.html'));
-        };
-
-        self.routes['/prueba'] = function(req, res) {
-            //res.setHeader('Content-Type', 'text/html');
-            //res.send(connection_string );
-            var objToJson = {};
-            objToJson.response = res;
-            res.write(JSON.stringify(objToJson));
         };
 
     };
@@ -155,23 +143,26 @@ var SampleApp = function() {
         self.app = express();
         self.app.use(express.urlencoded());
         self.app.use(express.json());
+
         self.app.use(express.cookieParser());
+        self.app.use(express.session({secret: 'safddfsfs'}));
         self.app.use(express.bodyParser());
         self.app.use(express.methodOverride());
-        self.app.use(self.app.router);
-        self.app.use(express.session({secret: 'jeiker26'}));
-
         self.app.use(passport.initialize());
         self.app.use(passport.session());
-
+        self.app.use(self.app.router);
+        
+        
+        
+        //Login
         self.app.get('/logout', function(rep, res) {
             req.logOut();
-            res.redirect('/');
+            res.redirect('www/index.html');
         });
         self.app.get('/auth/twitter', passport.authenticate('twitter'));
         self.app.get('/auth/facebook', passport.authenticate('facebook'));
         self.app.get('/auth/twitter/callback', passport.authenticate('twitter',
-                {successRedirect: '/', failureRedirect: '/login'}
+                {successRedirect: '#/pratice', failureRedirect: '/login'}
         ));
         self.app.get('/auth/facebook/callback', passport.authenticate('facebook',
                 {successRedirect: '/', failureRedirect: '/login'}
@@ -182,7 +173,9 @@ var SampleApp = function() {
         for (var r in self.routes) {
             self.app.get(r, self.routes[r]);
         }
-        require('./routes/router')(self.app);
+        
+        //Mis routes
+        require('./routes/routerRutes')(self.app);
     };
 
 
